@@ -1,0 +1,47 @@
+plugins {
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://jars.interlis.ch'
+    }
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
+
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'ch.interlis:ili2pg:4.11.1'
+    implementation 'ch.interlis:ili2db:4.11.1'
+    implementation 'ch.ehi:ehibasics:1.4.0'
+    implementation 'org.postgresql:postgresql:42.2.18' 
+    
+    implementation 'info.picocli:picocli:4.7.5'
+    implementation 'info.picocli:picocli-codegen:4.7.5'
+    annotationProcessor 'info.picocli:picocli-codegen:4.7.5'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
+
+application {
+    mainClass = 'ch.so.agi.ili2pg.App'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+run {
+    //args = ["--help"]
+    args = ["--dbdatabase=pub", "--dbhost=xxxxx.org", "--dbschema=arp_nutzungsplanung_pub_v1" , "--dbusr=ddluser", "--dbpwd=ddluser", "--models=fubar", "--export=/Users/stefan/tmp/"]
+    //args = ["--server", "--directory=/Users/stefan/tmp/ili2repo/models/", "--init"]
+}
+
