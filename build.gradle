@@ -11,6 +11,9 @@ repositories {
 
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
+    testImplementation 'org.testcontainers:testcontainers:1.19.1'
+    testImplementation "org.testcontainers:junit-jupiter:1.19.1"
+    testImplementation 'org.testcontainers:postgresql:1.19.1'
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
@@ -19,6 +22,9 @@ dependencies {
     implementation 'ch.interlis:ili2db:4.11.1'
     implementation 'ch.ehi:ehibasics:1.4.0'
     implementation 'org.postgresql:postgresql:42.2.18' 
+    
+    implementation 'org.slf4j:slf4j-api:1.7.36'
+    implementation 'org.slf4j:slf4j-simple:1.7.36'
     
     implementation 'info.picocli:picocli:4.7.5'
     implementation 'info.picocli:picocli-codegen:4.7.5'

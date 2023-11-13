@@ -89,28 +89,35 @@ public class App implements Callable<Integer> {
         System.out.println(dburl);
         String fileExtension = itf ? "itf" : "xtf";
         
-        List<Map<String,String>> datasets = new ArrayList<>();
-        try(Connection con = DriverManager.getConnection(dburl, "XXXXX", "YYYYY"); Statement stmt = con.createStatement();) {
-           try(ResultSet rs = stmt.executeQuery("SELECT datasetname FROM " + dbschema + "." + DATASET_TABLE);) {
-              while(rs.next()) {
-                 String datasetName = rs.getString("datasetname");
-                 System.out.print(datasetName+", ");
-                 
-                 String fileName = outputDirectory.toPath().resolve(Paths.get(datasetName + "." + fileExtension)).toAbsolutePath().toString();
-                 System.out.print(fileName+", ");
-                 Map<String,String> dataset = new HashMap<>();
-                 dataset.put(datasetName, fileName);
-                 datasets.add(dataset);
-                 
-                 
-                 System.out.println();
-              }
-           } catch (SQLException e) {
-              e.printStackTrace();
-           }
-        } catch (SQLException e) {
-              e.printStackTrace();
-        }
+        
+        Ili2pgBatcher ili2pgBatcher = new Ili2pgBatcher();
+        ili2pgBatcher.export(config, outputDirectory.toPath());
+        
+//        List<Map<String,String>> datasets = new ArrayList<>();
+//        try(Connection con = DriverManager.getConnection(dburl, "XXXXX", "YYYYY"); Statement stmt = con.createStatement();) {
+//           try(ResultSet rs = stmt.executeQuery("SELECT datasetname FROM " + dbschema + "." + DATASET_TABLE);) {
+//              while(rs.next()) {
+//                 String datasetName = rs.getString("datasetname");
+//                 System.out.print(datasetName+", ");
+//                 
+//                 String fileName = outputDirectory.toPath().resolve(Paths.get(datasetName + "." + fileExtension)).toAbsolutePath().toString();
+//                 System.out.print(fileName+", ");
+//                 Map<String,String> dataset = new HashMap<>();
+//                 dataset.put(datasetName, fileName);
+//                 datasets.add(dataset);
+//                 
+//                 
+//                 System.out.println();
+//              }
+//           } catch (SQLException e) {
+//              e.printStackTrace();
+//           }
+//        } catch (SQLException e) {
+//              e.printStackTrace();
+//        }
+        
+        
+        
         
         // datasets erst ganz am Schluss in csv file schreiben.
         // Dann weiss man, ob alles funktioniert hat.
