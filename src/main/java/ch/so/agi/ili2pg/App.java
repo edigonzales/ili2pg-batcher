@@ -1,6 +1,7 @@
 package ch.so.agi.ili2pg;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -13,8 +14,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
+import org.interlis2.validator.Validator;
+
 import com.google.common.collect.Maps;
 
+import ch.ehi.basics.settings.Settings;
 import ch.ehi.ili2db.gui.Config;
 import ch.ehi.ili2pg.PgMain;
 import picocli.CommandLine;
@@ -61,10 +65,19 @@ public class App implements Callable<Integer> {
     @Option(names = { "--models" }, required = true, description = "Name(s) of ili-models.") 
     String models;
 
+    @Option(names = { "--modeldir" }, required = false, description = "Path(s) of directories containing ili-files.") 
+    String modeldir;
+
     @Option(names = { "--itf" }, required = false, description = "INTERLIS 1 data") 
     boolean itf;
+
+    @Option(names = { "--allObjectsAccessible" }, required = false, description = "Assume that all objects are known to the validator.") 
+    boolean allObjectsAccessible;
     
-    @Option(names = { "--export" }, required = true, description = "Output directory.") 
+//    @Option(names = { "--log" }, required = false, description = "log messages to file.") 
+//    boolean log;
+    
+    @Option(names = { "--export" }, required = false, description = "Output directory.") 
     File outputDirectory;
     
     private static final String DATASET_TABLE = "t_ili2db_dataset";
@@ -77,6 +90,10 @@ public class App implements Callable<Integer> {
 
         config.setConfigReadFromDb(true);
         config.setModels(models);
+        
+        if (modeldir != null) {
+            config.setModeldir(modeldir);
+        }
 
         config.setDbhost(dbhost);
         config.setDbport(dbport);
@@ -86,35 +103,26 @@ public class App implements Callable<Integer> {
         config.setDburl(dburl);
         config.setDbschema(dbschema);
         
-        System.out.println(dburl);
-        String fileExtension = itf ? "itf" : "xtf";
+        if (itf) {
+            config.setItfTransferfile(true);
+        }
         
+        if (disableValidation) {
+            config.setValidation(false);
+        }
         
+        Settings settings = new Settings();
+        
+        if (allObjectsAccessible) {
+            settings.setValue(Validator.SETTING_ALL_OBJECTS_ACCESSIBLE, Validator.TRUE);
+        }
+                        
         Ili2pgBatcher ili2pgBatcher = new Ili2pgBatcher();
-        ili2pgBatcher.export(config, outputDirectory.toPath());
         
-//        List<Map<String,String>> datasets = new ArrayList<>();
-//        try(Connection con = DriverManager.getConnection(dburl, "XXXXX", "YYYYY"); Statement stmt = con.createStatement();) {
-//           try(ResultSet rs = stmt.executeQuery("SELECT datasetname FROM " + dbschema + "." + DATASET_TABLE);) {
-//              while(rs.next()) {
-//                 String datasetName = rs.getString("datasetname");
-//                 System.out.print(datasetName+", ");
-//                 
-//                 String fileName = outputDirectory.toPath().resolve(Paths.get(datasetName + "." + fileExtension)).toAbsolutePath().toString();
-//                 System.out.print(fileName+", ");
-//                 Map<String,String> dataset = new HashMap<>();
-//                 dataset.put(datasetName, fileName);
-//                 datasets.add(dataset);
-//                 
-//                 
-//                 System.out.println();
-//              }
-//           } catch (SQLException e) {
-//              e.printStackTrace();
-//           }
-//        } catch (SQLException e) {
-//              e.printStackTrace();
-//        }
+        if (outputDirectory != null) {
+            ili2pgBatcher.export(config, outputDirectory.toPath(), settings);            
+        }
+        
         
         
         
@@ -124,31 +132,6 @@ public class App implements Callable<Integer> {
         
         
         
-        // TODO: if/else logic ??
-        
-//        if (initSiteXml) {
-//            InputStream is = this.getClass().getClassLoader().getResourceAsStream("ilisite.xml");
-//            File file = Paths.get(modelsDir.getAbsolutePath(), new File("ilisite.xml").getName()).toFile();
-//            Files.copy(is, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-//        }
-//
-//        var failed = false;
-//        if (!server) {
-//            failed = new ListModels().listModels(modelsDir);
-//            if (failed) return 1; 
-//        }
-//        
-//        if (server) {
-//            new Httpd(modelsDir.getAbsolutePath()).start();
-//            
-//            // see https://community.oracle.com/tech/developers/discussion/1541952/java-application-not-terminating-immediatly-after-ctrl-c
-//            final Console console = System.console();
-//            String line;
-//            do {
-//                System.out.println("Ctrl-C to stop server...");
-//                line = console.readLine();
-//            } while (line == null);
-//        }
         
         return 0; //true ? 1 : 0;
     }

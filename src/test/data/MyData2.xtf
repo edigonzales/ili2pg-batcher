@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TRANSFER xmlns="http://www.interlis.ch/INTERLIS2.3">
+  <HEADERSECTION SENDER="ili2gpkg-5.0.1-447c03f22b8f346a44ada86c553d10110872fd40" VERSION="2.3">
+    <MODELS>
+      <MODEL NAME="MyModel" VERSION="2023-11-18" />
+    </MODELS>
+  </HEADERSECTION>
+  <DATASECTION>
+    <MyModel.MyTopic BID="b1">
+      <MyModel.MyTopic.ClassA TID="o1">
+        <attr1>bar</attr1>
+        <attr2>2</attr2>
+      </MyModel.MyTopic.ClassA>
+    </MyModel.MyTopic>
+  </DATASECTION>
+</TRANSFER>

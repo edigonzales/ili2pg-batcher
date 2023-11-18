@@ -14,15 +14,20 @@ dependencies {
     testImplementation 'org.testcontainers:testcontainers:1.19.1'
     testImplementation "org.testcontainers:junit-jupiter:1.19.1"
     testImplementation 'org.testcontainers:postgresql:1.19.1'
+    testImplementation 'org.assertj:assertj-db:2.0.2'
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     implementation 'com.google.guava:guava:31.1-jre'
     implementation 'ch.interlis:ili2pg:4.11.1'
     implementation 'ch.interlis:ili2db:4.11.1'
-    implementation 'ch.ehi:ehibasics:1.4.0'
+    implementation 'ch.ehi:ehibasics:1.4.1'
+    implementation 'ch.interlis:ilivalidator:1.13.3'
     implementation 'org.postgresql:postgresql:42.2.18' 
-    
+    implementation 'commons-io:commons-io:2.15.0'
+    //implementation 'org.apache.commons:commons-csv:1.10.0'
+    implementation 'com.opencsv:opencsv:5.8'
+
     implementation 'org.slf4j:slf4j-api:1.7.36'
     implementation 'org.slf4j:slf4j-simple:1.7.36'
     

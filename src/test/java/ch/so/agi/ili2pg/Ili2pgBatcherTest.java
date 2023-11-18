@@ -1,13 +1,28 @@
 package ch.so.agi.ili2pg;
 
+import org.assertj.db.type.Source;
+import org.assertj.db.type.Table;
+import org.interlis2.validator.Validator;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.postgresql.PGProperty;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import ch.ehi.basics.settings.Settings;
+import ch.ehi.ili2db.gui.Config;
+import ch.ehi.ili2pg.PgMain;
+
 import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.db.api.Assertions.assertThat;
+
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Properties;
 
 @Testcontainers
 public class Ili2pgBatcherTest {
@@ -27,13 +42,60 @@ public class Ili2pgBatcherTest {
 
     
     @Test
-    void dummy() throws Exception {
-        assertTrue(postgres.isRunning());
+    void export_Ok(@TempDir Path tempDir) throws Exception {        
+        String dbSchema = "dummy";
+        String modelName = "MyModel";
         
-        System.out.println(postgres.getJdbcUrl());
-        System.out.println(postgres.getUsername());        
-        System.out.println(postgres.getPassword());        
-    }
+        // Prepare
+        DbUtil.importXtf(postgres, dbSchema, modelName, new File("src/test/data/MyData1.xtf"), true);
+        DbUtil.importXtf(postgres, dbSchema, modelName, new File("src/test/data/MyData2.xtf"), false);
+                
+        // Run
+        //Thread.sleep(120000);
+        
+        Config config = new Config();
+        new PgMain().initConfig(config);
 
-    
+        config.setConfigReadFromDb(true);
+        config.setModels(modelName);
+        config.setModeldir("src/test/data/");
+        
+        Properties props = org.postgresql.Driver.parseURL(postgres.getJdbcUrl(), null);
+
+        config.setDbhost(props.getProperty(PGProperty.PG_HOST.getName()));
+        config.setDbport(props.getProperty(PGProperty.PG_PORT.getName()));
+        config.setDbdatabase(props.getProperty(PGProperty.PG_DBNAME.getName()));
+        config.setDbschema(dbSchema);
+        config.setDbusr(postgres.getUsername());
+        config.setDbpwd(postgres.getPassword());
+        config.setDburl(postgres.getJdbcUrl());
+        
+        Settings settings = new Settings();
+        settings.setValue(Validator.SETTING_ALL_OBJECTS_ACCESSIBLE, Validator.TRUE);
+
+        Ili2pgBatcher ili2pgBatcher = new Ili2pgBatcher();
+        ili2pgBatcher.export(config, tempDir, settings);
+        
+        // Validate
+        settings = new Settings();
+        settings.setValue(Validator.SETTING_ILIDIRS, config.getModeldir());
+        
+        boolean valid = false;
+        valid = Validator.runValidation(tempDir.resolve("MyData1.xtf").toString(), settings);
+        assertTrue(valid);
+
+        valid = Validator.runValidation(tempDir.resolve("MyData2.xtf").toString(), settings);
+        assertTrue(valid);
+        
+        // Für Import-Tests
+//        Source source = new Source(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
+//        Table table = new Table(source, dbSchema+"."+"classa");
+//
+//        assertThat(table).column("attr1")
+//            .value().isEqualTo("foo")
+//            .value().isEqualTo("bar");
+//        
+//        System.out.println(table.getRowsList().size());
+
+    }
 }

@@ -1,0 +1,19 @@
+INTERLIS 2.3;
+MODEL MyModel
+  AT "mailto:stefan.ziegler@bd.so.ch" VERSION "2023-11-18" =
+      
+    TOPIC MyTopic =
+        DOMAIN
+            Lkoord = COORD 0.000 .. 850000.000 [INTERLIS.m],
+                           0.000 .. 310000.000 [INTERLIS.m],
+                     ROTATION 2 -> 1;
+
+        CLASS ClassA =
+            attr1 : TEXT;
+            attr2 : 0..10;
+        END ClassA;
+        
+       
+    END MyTopic;
+    
+END MyModel.
