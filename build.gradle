@@ -51,8 +51,8 @@ tasks.named('test') {
 }
 
 run {
-    //args = ["--help"]
-    args = ["--dbdatabase=pub", "--dbhost=xxxxx.org", "--dbschema=arp_nutzungsplanung_pub_v1" , "--dbusr=ddluser", "--dbpwd=ddluser", "--models=fubar", "--export=/Users/stefan/tmp/"]
+    args = ["--help"]
+    //args = ["--dbdatabase=pub", "--dbhost=xxxxx.org", "--dbschema=arp_nutzungsplanung_pub_v1" , "--dbusr=ddluser", "--dbpwd=ddluser", "--models=fubar", "--export=/Users/stefan/tmp/"]
     //args = ["--server", "--directory=/Users/stefan/tmp/ili2repo/models/", "--init"]
 }
 

@@ -22,6 +22,7 @@ import ch.ehi.basics.settings.Settings;
 import ch.ehi.ili2db.gui.Config;
 import ch.ehi.ili2pg.PgMain;
 import picocli.CommandLine;
+import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -39,8 +40,7 @@ import picocli.CommandLine.Option;
         optionListHeading = "%nOptions:%n"
       )
 
-public class App implements Callable<Integer> {
-    
+public class App implements Callable<Integer> {    
     @Option(names = { "--dbhost" }, required = false, defaultValue = "localhost", description = "The host name of the server.")
     String dbhost;
     
@@ -77,10 +77,19 @@ public class App implements Callable<Integer> {
 //    @Option(names = { "--log" }, required = false, description = "log messages to file.") 
 //    boolean log;
     
-    @Option(names = { "--export" }, required = false, description = "Output directory.") 
-    File outputDirectory;
+//    @Option(names = { "--export" }, required = false, description = "Output directory.") 
+//    File outputDirectory;
     
-    private static final String DATASET_TABLE = "t_ili2db_dataset";
+    @ArgGroup(exclusive = true, multiplicity = "1")
+    FunctionExclusive functionExclusive;
+
+    static class FunctionExclusive {
+        @Option(names = { "--export" }, required = true, description = "Output directory.") 
+        File outputDirectory;
+
+        @Option(names = { "--import" }, required = true, description = "Dataset file.") 
+        File inputDatasetFile;
+    }
 
     @Override
     public Integer call() throws Exception {
@@ -119,20 +128,14 @@ public class App implements Callable<Integer> {
                         
         Ili2pgBatcher ili2pgBatcher = new Ili2pgBatcher();
         
-        if (outputDirectory != null) {
-            ili2pgBatcher.export(config, outputDirectory.toPath(), settings);            
+        if (functionExclusive.outputDirectory != null) {
+            ili2pgBatcher.doExport(config, functionExclusive.outputDirectory.toPath(), settings);            
+        } 
+        
+        if (functionExclusive.inputDatasetFile !=  null) {
+            ili2pgBatcher.doImport(config, functionExclusive.inputDatasetFile.toPath());
         }
-        
-        
-        
-        
-        
-        // datasets erst ganz am Schluss in csv file schreiben.
-        // Dann weiss man, ob alles funktioniert hat.
-        
-        
-        
-        
+         
         return 0; //true ? 1 : 0;
     }
     

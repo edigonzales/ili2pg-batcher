@@ -1,8 +1,9 @@
 package ch.so.agi.ili2pg;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
@@ -15,27 +16,67 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.FilenameUtils;
 import org.interlis2.validator.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+import com.opencsv.exceptions.CsvException;
 
-import ch.ehi.basics.logging.EhiLogger;
-import ch.ehi.basics.logging.FileListener;
 import ch.ehi.basics.settings.Settings;
 import ch.ehi.ili2db.base.Ili2db;
 import ch.ehi.ili2db.base.Ili2dbException;
 import ch.ehi.ili2db.gui.Config;
-import ch.interlis.iox_j.logging.FileLogger;
 
 public class Ili2pgBatcher {
     private static Logger log = LoggerFactory.getLogger(Ili2pgBatcher.class);
 
     private static final String DATASET_TABLE = "t_ili2db_dataset";
     
-    public void export(Config config, Path outputDirectory, Settings settings) throws SQLException, Ili2dbException, IOException {        
+    public void doImport(Config config, Path inputDatasetFile) throws IOException {
+        List<String[]> datasets = new ArrayList<>();
+        try (Reader reader = Files.newBufferedReader(inputDatasetFile); CSVReader csvReader = new CSVReader(reader)) {
+            datasets = csvReader.readAll();            
+        } catch (IOException | CsvException e) {
+            e.printStackTrace();
+            throw new IOException(e);
+        }
+        
+        Map<String,Boolean> datasetsImportResults = new HashMap<>();
+
+        for (String[] datasetArray : datasets) {
+            String dataset = datasetArray[0];
+            String fileName = datasetArray[1];
+
+            config.setValidation(false);
+            
+            config.setLogfile(fileName + "_import.log");
+            
+            config.setBasketHandling(Config.BASKET_HANDLING_READWRITE);
+            config.setDatasetName(dataset);
+            config.setXtffile(fileName);
+            config.setFunction(Config.FC_REPLACE);
+            
+            try {
+                Ili2db.run(config, null);
+                datasetsImportResults.put(dataset, Boolean.TRUE);
+            } catch (Ili2dbException e) {
+                datasetsImportResults.put(dataset, Boolean.FALSE);
+                continue;
+            }
+        } 
+        
+        for (var entry : datasetsImportResults.entrySet()) {
+            String dataset = entry.getKey();
+            Boolean result = entry.getValue();
+            if (!result) {
+                System.err.println("Error while importing dataset: " + dataset);                
+            }
+        }
+    };
+    
+    public void doExport(Config config, Path outputDirectory, Settings settings) throws SQLException, Ili2dbException, IOException {        
         String fileExtension = "xtf";
         if (config.isItfTransferfile()) {
             fileExtension = "itf";
@@ -69,7 +110,7 @@ public class Ili2pgBatcher {
             boolean disableValidation = config.isValidation();
             config.setValidation(false);
             
-            config.setLogfile(fileName + ".log");
+            config.setLogfile(fileName + "_export.log");
             
             config.setBasketHandling(Config.BASKET_HANDLING_READWRITE);
             config.setDatasetName(dataset);
