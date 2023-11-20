@@ -53,7 +53,10 @@ public class Ili2pgBatcher {
             
             config.setLogfile(fileName + "_import.log");
             
+            config.setConfigReadFromDb(true);
+            Config.setStrokeArcs(config, Config.STROKE_ARCS_ENABLE); // TODO: Warum nötig, wenn configReadFromDb?
             config.setBasketHandling(Config.BASKET_HANDLING_READWRITE);
+            config.setCreateDatasetCols(Config.CREATE_DATASET_COL);
             config.setDatasetName(dataset);
             config.setXtffile(fileName);
             config.setFunction(Config.FC_REPLACE);

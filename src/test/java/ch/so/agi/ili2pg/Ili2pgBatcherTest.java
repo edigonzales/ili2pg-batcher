@@ -28,7 +28,6 @@ import java.util.Properties;
 @Testcontainers
 public class Ili2pgBatcherTest {
     
-    
     static String WAIT_PATTERN = ".*database system is ready to accept connections.*\\s";
     
     // static: will be shared between test methods
@@ -54,6 +53,7 @@ public class Ili2pgBatcherTest {
         config.setModels(modelName);
         config.setModeldir("src/test/data/");
         config.setBasketHandling(Config.BASKET_HANDLING_READWRITE);
+        config.setCreateDatasetCols(Config.CREATE_DATASET_COL);
 
         Properties props = org.postgresql.Driver.parseURL(postgres.getJdbcUrl(), null);
 
@@ -67,13 +67,15 @@ public class Ili2pgBatcherTest {
 
         // Wird später in doImport überschrieben.
         config.setFunction(Config.FC_SCHEMAIMPORT);
-        
         Ili2db.run(config, null);
         
         // Run
         Ili2pgBatcher ili2pgBatcher = new Ili2pgBatcher();
         ili2pgBatcher.doImport(config, Paths.get("src/test/data/datasets.csv"));
 
+        //Thread.sleep(120000);
+        
+        
         // Validate
         Source source = new Source(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
         Table table = new Table(source, dbSchema + "." + "classa");
